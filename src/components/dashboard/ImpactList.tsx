@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/dashboard/EmptyState";
+
 type ImpactEntry = {
   id: string;
   description: string;
@@ -9,11 +11,10 @@ type ImpactEntry = {
 export function ImpactList({ logs }: { logs: ImpactEntry[] }) {
   if (logs.length === 0) {
     return (
-      <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-8 text-center">
-        <p className="text-sm text-zinc-500">
-          No impact entries yet. Log your first one above.
-        </p>
-      </div>
+      <EmptyState
+        title="Log your first impact"
+        description="Track how AI tools are saving you time at work. Use the form above to get started."
+      />
     );
   }
 

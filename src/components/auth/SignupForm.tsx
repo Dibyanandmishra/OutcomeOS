@@ -55,9 +55,9 @@ export const SignupForm = () => {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-zinc-950 border-zinc-800">
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <Input 
             label="Full Name" 
             name="name" 
@@ -84,7 +84,7 @@ export const SignupForm = () => {
           />
           
           {error && (
-            <div className="text-sm font-medium text-red-500 bg-red-500/10 p-3 rounded-md border border-red-500/20">
+            <div className="text-sm font-medium text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20" role="alert">
               {error}
             </div>
           )}
@@ -93,9 +93,9 @@ export const SignupForm = () => {
             Create Account
           </Button>
           
-          <div className="text-center text-sm text-slate-400 mt-4">
+          <div className="text-center text-sm text-zinc-400 mt-4">
             Already have an account?{" "}
-            <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition-colors">
+            <Link href="/login" className="text-white hover:text-zinc-300 transition-colors focus:outline-none focus:underline">
               Sign in
             </Link>
           </div>

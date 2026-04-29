@@ -1,31 +1,58 @@
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { StatCard } from "@/components/dashboard/StatCard";
+
 export const metadata = {
   title: "Dashboard - OutcomeOS",
 };
 
-export default function DashboardPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-semibold text-white mb-2 tracking-tight">
-        Welcome to OutcomeOS Dashboard
-      </h1>
-      <p className="text-sm text-zinc-400">
-        Select a module from the sidebar to get started.
-      </p>
+export default async function DashboardPage() {
+  const session = await auth();
 
-      {/* Placeholder content grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-white">Active Modules</h2>
-          <p className="text-2xl font-semibold text-white">0</p>
-        </div>
-        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-white">Pending Doubts</h2>
-          <p className="text-2xl font-semibold text-white">0</p>
-        </div>
-        <div className="p-6 rounded-xl border border-zinc-800 bg-zinc-950/50 flex flex-col gap-2">
-          <h2 className="text-sm font-medium text-white">Total Impact</h2>
-          <p className="text-2xl font-semibold text-white">0%</p>
-        </div>
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+
+  const userId = session.user.id;
+
+  const [totalModules, completedModules, totalDoubts, impactLogs] =
+    await Promise.all([
+      prisma.module.count(),
+      prisma.progress.count({
+        where: { userId, status: "COMPLETED" },
+      }),
+      prisma.doubt.count({
+        where: { userId },
+      }),
+      prisma.impactLog.aggregate({
+        where: { userId },
+        _sum: { hoursSaved: true },
+        _count: true,
+      }),
+    ]);
+
+  const totalHoursSaved =
+    Math.round((impactLogs._sum.hoursSaved || 0) * 10) / 10;
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-white tracking-tight">
+          Welcome back, {session.user.name || "Learner"}
+        </h1>
+        <p className="text-sm text-zinc-400 mt-1">
+          Here&apos;s an overview of your learning journey.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <StatCard
+          label="Modules Completed"
+          value={`${completedModules}/${totalModules}`}
+        />
+        <StatCard label="Doubts Resolved" value={totalDoubts} />
+        <StatCard label="Hours Saved" value={totalHoursSaved} suffix="h" />
       </div>
     </div>
   );
