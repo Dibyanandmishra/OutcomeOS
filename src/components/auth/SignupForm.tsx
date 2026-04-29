@@ -42,8 +42,14 @@ export const SignupForm = () => {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to sign up.");
+        let errorMsg = "Failed to sign up.";
+        try {
+          const data = await res.json();
+          errorMsg = data.error || errorMsg;
+        } catch {
+          // fallback to default
+        }
+        throw new Error(errorMsg);
       }
 
       router.push("/login?registered=true");
