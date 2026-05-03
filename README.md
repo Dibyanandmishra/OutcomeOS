@@ -15,7 +15,7 @@
 ## ⚡ Elevate Your Workflow
 OutcomeOS is not just another dashboard—it's a high-performance productivity platform engineered for modern professionals. Designed with a stunning, fluid glassmorphic interface, OutcomeOS seamlessly integrates guided learning modules with a real-time, zero-latency streaming AI assistant to dramatically accelerate task completion and knowledge acquisition.
 
-![OutcomeOS Hero Image](public/hero.png)
+![OutcomeOS HomePage Image](public/HomePage.png)
 
 ## ✨ Core Capabilities
 
@@ -66,12 +66,6 @@ outcome_os/
 └── tailwind.config.ts      # Design system configuration
 ```
 
-## 🚀 Deployment & Links
-
-*   **Live Application**: [INSERT_DEPLOYMENT_LINK_HERE]
-*   **Project Repository**: [INSERT_GITHUB_REPO_LINK_HERE]
-*   **Portfolio / Developer Profile**: [INSERT_YOUR_PORTFOLIO_LINK_HERE]
-
 ## 💻 Local Development
 
 Want to run OutcomeOS locally? Follow these steps:
@@ -118,7 +112,7 @@ Want to run OutcomeOS locally? Follow these steps:
 
 ---
 <div align="center">
-  <p>Engineered with precision by <strong>Dibyanand Mishra</strong> for the House Of Edtech Internship Application.</p>
+  <p>Engineered with precision by <strong>Dibyanand Mishra</strong> for the <a href="https://houseofedtech.in/">House Of Edtech</a> Internship Application.</p>
 </div>
 
 ## 👨‍💻 Author
