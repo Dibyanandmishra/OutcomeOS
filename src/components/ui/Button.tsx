@@ -1,25 +1,36 @@
 import React, { forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "accent";
+  size?: "sm" | "md" | "lg" | "icon";
   isLoading?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = "", variant = "primary", isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
+  ({ className, variant = "primary", size = "md", isLoading, children, disabled, ...props }, ref) => {
+    const baseStyles = "inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]";
     
     const variants = {
       primary: "bg-white text-black hover:bg-zinc-200 shadow-sm",
       secondary: "bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700",
       outline: "border border-zinc-800 text-white hover:bg-zinc-900",
+      ghost: "text-zinc-400 hover:text-white hover:bg-white/5",
+      accent: "bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.3)]",
+    };
+
+    const sizes = {
+      sm: "h-9 px-3 text-xs",
+      md: "h-11 px-5 text-sm",
+      lg: "h-13 px-8 text-base",
+      icon: "h-10 w-10",
     };
 
     return (
       <button
         ref={ref}
         disabled={isLoading || disabled}
-        className={`h-11 px-5 py-2.5 w-full ${baseStyles} ${variants[variant]} ${className}`}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
         {...props}
       >
         {isLoading && (
