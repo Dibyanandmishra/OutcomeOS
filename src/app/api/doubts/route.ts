@@ -19,6 +19,16 @@ Answer clearly with real workplace examples. Keep answers under 150 words. Use s
 If a question is outside these topics, respond:
 "This is outside the course scope. Please ask in your batch WhatsApp group."`;
 
+function buildModuleContext(module: {
+  title: string;
+  description: string;
+  orderIndex: number;
+} | null) {
+  if (!module) return "";
+
+  return `\n\nCurrent learner module context:\nModule ${module.orderIndex}: ${module.title}\nModule description: ${module.description}\n\nUse this context to answer specifically for the current module. If the question is ambiguous, connect the answer to this module.`;
+}
+
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -32,9 +42,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Question is required" }, { status: 400 });
     }
 
+    const selectedModule =
+      typeof moduleId === "string"
+        ? await prisma.module.findUnique({
+            where: { id: moduleId },
+            select: {
+              title: true,
+              description: true,
+              orderIndex: true,
+            },
+          })
+        : null;
+
     const chatStream = await groq.chat.completions.create({
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        {
+          role: "system",
+          content: `${SYSTEM_PROMPT}${buildModuleContext(selectedModule)}`,
+        },
         { role: "user", content: question.trim() },
       ],
       model: "llama-3.3-70b-versatile",

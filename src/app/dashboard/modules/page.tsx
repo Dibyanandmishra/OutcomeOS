@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { Status } from "@prisma/client";
 import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
-import { ModuleList } from "@/components/dashboard/ModuleList";
-import { ProgressBar } from "@/components/dashboard/ProgressBar";
+import { ModuleProgressClient } from "@/components/dashboard/ModuleProgressClient";
 
 export const metadata = {
   title: "Modules - OutcomeOS",
@@ -34,23 +34,16 @@ export default async function ModulesPage() {
       title: m.title,
       description: m.description,
       orderIndex: m.orderIndex,
-      progressStatus: p?.status || "NOT_STARTED",
+      progressStatus: p?.status || Status.NOT_STARTED,
     };
   });
-
-  const totalModules = modulesWithProgress.length;
-  const completedModules = modulesWithProgress.filter(
-    (m) => m.progressStatus === "COMPLETED"
-  ).length;
 
   return (
     <DashboardPageShell
       title="Module Progress Tracker"
       description="Track your progress across all learning modules."
     >
-      <ProgressBar total={totalModules} completed={completedModules} />
-
-      <ModuleList initialModules={modulesWithProgress} />
+      <ModuleProgressClient initialModules={modulesWithProgress} />
     </DashboardPageShell>
   );
 }

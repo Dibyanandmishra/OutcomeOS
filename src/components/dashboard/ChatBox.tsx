@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
+import { Mic, MicOff } from "lucide-react";
 
 type Message = {
   id: string;
@@ -9,18 +10,109 @@ type Message = {
   content: string;
 };
 
-export function ChatBox() {
+type ModuleOption = {
+  id: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+};
+
+type SpeechRecognitionLike = {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: (() => void) | null;
+  onend: (() => void) | null;
+  start: () => void;
+  stop: () => void;
+};
+
+type SpeechRecognitionEventLike = {
+  results: {
+    length: number;
+    [index: number]: {
+      isFinal: boolean;
+      [index: number]: {
+        transcript: string;
+      };
+    };
+  };
+};
+
+declare global {
+  interface Window {
+    SpeechRecognition?: new () => SpeechRecognitionLike;
+    webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+  }
+}
+
+export function ChatBox({ modules = [] }: { modules?: ModuleOption[] }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [selectedModuleId, setSelectedModuleId] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
+
+  useEffect(() => {
+    return () => {
+      recognitionRef.current?.stop();
+    };
+  }, []);
+
+  const handleVoiceInput = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const Recognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!Recognition) {
+      toast.error("Voice input is not supported in this browser");
+      return;
+    }
+
+    const recognition = new Recognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = "en-IN";
+    recognitionRef.current = recognition;
+
+    recognition.onresult = (event) => {
+      let transcript = "";
+
+      for (let i = 0; i < event.results.length; i += 1) {
+        transcript += event.results[i][0].transcript;
+      }
+
+      setInput(transcript);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      toast.error("Could not capture voice input");
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      inputRef.current?.focus();
+    };
+
+    setIsListening(true);
+    recognition.start();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,7 +139,10 @@ export function ChatBox() {
       const res = await fetch("/api/doubts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({
+          question,
+          moduleId: selectedModuleId || undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -118,6 +213,30 @@ export function ChatBox() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-13rem)] max-w-3xl mx-auto">
+      {modules.length > 0 && (
+        <div className="mb-4">
+          <label htmlFor="doubt-module" className="sr-only">
+            Module context
+          </label>
+          <select
+            id="doubt-module"
+            value={selectedModuleId}
+            onChange={(e) => setSelectedModuleId(e.target.value)}
+            disabled={isLoading}
+            className="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-2.5 text-sm text-white outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-500 disabled:opacity-50"
+          >
+            <option value="" className="bg-zinc-900">
+              General course question
+            </option>
+            {modules.map((module) => (
+              <option key={module.id} value={module.id} className="bg-zinc-900">
+                Module {module.orderIndex}: {module.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {/* Messages */}
       <div
         ref={scrollRef}
@@ -184,6 +303,20 @@ export function ChatBox() {
           disabled={isLoading}
           className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-sm text-white placeholder-zinc-500 outline-none focus:border-zinc-600 focus:ring-2 focus:ring-zinc-500 disabled:opacity-50"
         />
+        <button
+          type="button"
+          onClick={handleVoiceInput}
+          disabled={isLoading}
+          aria-pressed={isListening}
+          aria-label={isListening ? "Stop voice input" : "Start voice input"}
+          className={`px-4 py-3 text-sm font-medium rounded-lg border transition-colors shrink-0 focus:outline-none focus:ring-2 focus:ring-zinc-500 disabled:opacity-50 ${
+            isListening
+              ? "bg-red-500/10 text-red-300 border-red-500/30"
+              : "bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-800 hover:text-white"
+          }`}
+        >
+          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        </button>
         <button
           type="submit"
           disabled={isLoading || !input.trim()}

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ImpactForm } from "@/components/dashboard/ImpactForm";
 import { ImpactList } from "@/components/dashboard/ImpactList";
+import { ImpactVisualizations } from "@/components/dashboard/ImpactVisualizations";
 import { ImpactListSkeleton } from "@/components/dashboard/DashboardSkeletons";
 import { StatCard } from "@/components/dashboard/StatCard";
 
@@ -88,6 +89,8 @@ export function ImpactDashboard({ modules }: { modules: Module[] }) {
 
       {/* Form */}
       <ImpactForm modules={modules} onCreated={refreshLogs} />
+
+      {!isLoading && !fetchError && <ImpactVisualizations logs={logs} />}
 
       {/* List */}
       <div>

@@ -23,7 +23,7 @@ export function ImpactList({ logs }: { logs: ImpactEntry[] }) {
       {logs.map((log) => (
         <div
           key={log.id}
-          className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-3"
+          className="premium-surface premium-hover rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-3"
         >
           <div className="flex-1 min-w-0">
             <p className="text-sm text-white">{log.description}</p>

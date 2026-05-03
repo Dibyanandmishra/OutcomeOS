@@ -88,7 +88,7 @@ export function ImpactForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 flex flex-col gap-4"
+      className="premium-surface rounded-xl p-6 flex flex-col gap-4"
     >
       <h2 className="text-base font-medium text-white">Log New Impact</h2>
 
