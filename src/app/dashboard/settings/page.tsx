@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
 import { SettingsForm } from "@/components/dashboard/SettingsForm";
 

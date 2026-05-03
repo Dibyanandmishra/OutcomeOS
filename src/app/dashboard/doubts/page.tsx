@@ -2,6 +2,8 @@ import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
 import { ChatBox } from "@/components/dashboard/ChatBox";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Doubts - OutcomeOS",
 };
