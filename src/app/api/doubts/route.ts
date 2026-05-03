@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Question is required" }, { status: 400 });
     }
 
-    const chatCompletion = await groq.chat.completions.create({
+    const chatStream = await groq.chat.completions.create({
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: question.trim() },
@@ -40,26 +40,60 @@ export async function POST(req: Request) {
       model: "llama-3.3-70b-versatile",
       temperature: 0.6,
       max_tokens: 512,
+      stream: true,
     });
 
-    const answer =
-      chatCompletion.choices[0]?.message?.content?.trim() ||
-      "Sorry, I could not generate a response. Please try again.";
+    const encoder = new TextEncoder();
+    const trimmedQuestion = question.trim();
 
-    const doubt = await prisma.doubt.create({
-      data: {
-        userId: session.user.id,
-        moduleId: moduleId || null,
-        question: question.trim(),
-        answer,
+    const stream = new ReadableStream({
+      async start(controller) {
+        let answer = "";
+
+        try {
+          for await (const chunk of chatStream) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (!content) continue;
+
+            answer += content;
+            controller.enqueue(encoder.encode(content));
+          }
+
+          const savedAnswer =
+            answer.trim() ||
+            "Sorry, I could not generate a response. Please try again.";
+
+          if (!answer.trim()) {
+            controller.enqueue(encoder.encode(savedAnswer));
+          }
+
+          await prisma.doubt.create({
+            data: {
+              userId: session.user.id,
+              moduleId: moduleId || null,
+              question: trimmedQuestion,
+              answer: savedAnswer,
+            },
+          });
+        } catch (error) {
+          console.error("[DOUBTS_STREAM]", error);
+          if (!answer.trim()) {
+            controller.enqueue(
+              encoder.encode("Failed to process your question. Please try again.")
+            );
+          }
+        } finally {
+          controller.close();
+        }
       },
     });
 
-    return NextResponse.json({
-      id: doubt.id,
-      question: doubt.question,
-      answer: doubt.answer,
-      createdAt: doubt.createdAt,
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Content-Type-Options": "nosniff",
+      },
     });
   } catch (error) {
     console.error("[DOUBTS_POST]", error);

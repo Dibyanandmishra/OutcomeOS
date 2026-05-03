@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
 import { StatCard } from "@/components/dashboard/StatCard";
 
 export const metadata = {
@@ -36,16 +37,10 @@ export default async function DashboardPage() {
     Math.round((impactLogs._sum.hoursSaved || 0) * 10) / 10;
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-white tracking-tight">
-          Welcome back, {session.user.name || "Learner"}
-        </h1>
-        <p className="text-sm text-zinc-400 mt-1">
-          Here&apos;s an overview of your learning journey.
-        </p>
-      </div>
-
+    <DashboardPageShell
+      title={`Welcome back, ${session.user.name || "Learner"}`}
+      description="Here's an overview of your learning journey."
+    >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           label="Modules Completed"
@@ -54,6 +49,6 @@ export default async function DashboardPage() {
         <StatCard label="Doubts Resolved" value={totalDoubts} />
         <StatCard label="Hours Saved" value={totalHoursSaved} suffix="h" />
       </div>
-    </div>
+    </DashboardPageShell>
   );
 }

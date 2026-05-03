@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 type Module = {
   id: string;
@@ -12,7 +13,7 @@ export function ImpactForm({
   onCreated,
 }: {
   modules: Module[];
-  onCreated: () => void;
+  onCreated: () => void | Promise<void>;
 }) {
   const [description, setDescription] = useState("");
   const [moduleId, setModuleId] = useState("");
@@ -26,19 +27,25 @@ export function ImpactForm({
 
     if (!description.trim()) {
       setError("Description is required.");
+      toast.error("Description is required");
       return;
     }
     if (description.trim().length > 200) {
       setError("Description must be 200 characters or less.");
+      toast.error("Description is too long", {
+        description: "Keep it under 200 characters.",
+      });
       return;
     }
     if (!moduleId) {
       setError("Please select a module.");
+      toast.error("Please select a module");
       return;
     }
     const hours = parseFloat(hoursSaved);
     if (isNaN(hours) || hours <= 0) {
       setError("Hours saved must be greater than 0.");
+      toast.error("Hours saved must be greater than 0");
       return;
     }
 
@@ -63,9 +70,16 @@ export function ImpactForm({
       setDescription("");
       setModuleId("");
       setHoursSaved("");
-      onCreated();
+      toast.success("Impact logged", {
+        description: "Your hours saved have been added.",
+      });
+      await onCreated();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const message = err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+      toast.error("Could not save impact", {
+        description: message,
+      });
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 
 type Message = {
   id: string;
@@ -31,8 +32,14 @@ export function ChatBox() {
       role: "user",
       content: question,
     };
+    const assistantMessageId = crypto.randomUUID();
+    const assistantMessage: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+    };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...prev, userMessage, assistantMessage]);
     setInput("");
     setIsLoading(true);
 
@@ -48,25 +55,61 @@ export function ChatBox() {
         throw new Error(data.error || "Failed to get response");
       }
 
-      const data = await res.json();
+      if (!res.body) {
+        throw new Error("Failed to get response");
+      }
 
-      const assistantMessage: Message = {
-        id: data.id || crypto.randomUUID(),
-        role: "assistant",
-        content: data.answer,
-      };
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let streamedAnswer = "";
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      while (true) {
+        const { done, value } = await reader.read();
+        const chunk = decoder.decode(value, { stream: !done });
+
+        if (chunk) {
+          streamedAnswer += chunk;
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === assistantMessageId
+                ? { ...msg, content: streamedAnswer }
+                : msg
+            )
+          );
+        }
+
+        if (done) break;
+      }
+
+      const remainingChunk = decoder.decode();
+      if (remainingChunk) {
+        streamedAnswer += remainingChunk;
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === assistantMessageId
+              ? { ...msg, content: streamedAnswer }
+              : msg
+          )
+        );
+      }
+
+      if (!streamedAnswer.trim()) {
+        throw new Error("Failed to get response");
+      }
     } catch (err) {
-      const errorMessage: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content:
-          err instanceof Error && err.message !== "Failed to get response"
-            ? err.message
-            : "Something went wrong. Please try again.",
-      };
-      setMessages((prev) => [...prev, errorMessage]);
+      const content =
+        err instanceof Error && err.message !== "Failed to get response"
+          ? err.message
+          : "Something went wrong. Please try again.";
+
+      toast.error("Could not get an answer", {
+        description: content,
+      });
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === assistantMessageId ? { ...msg, content } : msg
+        )
+      );
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
@@ -110,19 +153,17 @@ export function ChatBox() {
                   : "bg-zinc-900 border border-zinc-800 text-zinc-200"
               }`}
             >
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+              <p className="whitespace-pre-wrap">
+                {msg.content || (
+                  <span className="inline-flex items-center gap-2 text-zinc-400">
+                    <span className="inline-block w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" />
+                    Thinking...
+                  </span>
+                )}
+              </p>
             </div>
           </div>
         ))}
-
-        {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-400 flex items-center gap-2">
-              <span className="inline-block w-1.5 h-1.5 bg-zinc-500 rounded-full animate-pulse" />
-              Thinking...
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Input */}

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
 import { ModuleList } from "@/components/dashboard/ModuleList";
 import { ProgressBar } from "@/components/dashboard/ProgressBar";
 
@@ -43,19 +44,13 @@ export default async function ModulesPage() {
   ).length;
 
   return (
-    <div className="flex flex-col gap-8 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-semibold text-white mb-2 tracking-tight">
-          Module Progress Tracker
-        </h1>
-        <p className="text-sm text-zinc-400">
-          Track your progress across all learning modules.
-        </p>
-      </div>
-
+    <DashboardPageShell
+      title="Module Progress Tracker"
+      description="Track your progress across all learning modules."
+    >
       <ProgressBar total={totalModules} completed={completedModules} />
 
       <ModuleList initialModules={modulesWithProgress} />
-    </div>
+    </DashboardPageShell>
   );
 }

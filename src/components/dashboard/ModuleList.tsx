@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Status } from "@prisma/client";
+import { toast } from "sonner";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 
 type ModuleWithProgress = {
@@ -60,10 +61,16 @@ export function ModuleList({ initialModules }: { initialModules: ModuleWithProgr
 
       if (!res.ok) throw new Error("Failed to update status");
 
+      toast.success("Progress updated", {
+        description: `${statusLabels[newStatus]} saved for this module.`,
+      });
       router.refresh();
     } catch {
       setModules(previousModules);
       setErrorId(moduleId);
+      toast.error("Could not update progress", {
+        description: "Your previous status has been restored.",
+      });
     } finally {
       setLoadingId(null);
     }
