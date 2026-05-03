@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OutcomeOS 🚀
 
-## Getting Started
+OutcomeOS is a premium, AI-powered productivity platform designed to help professionals and learners accelerate their outcomes. Built with a modern glassmorphic design and a cutting-edge tech stack, it provides guided learning modules, real-time activity tracking, and a streaming AI assistant.
 
-First, run the development server:
+![OutcomeOS Hero Image](public/hero.png)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Core Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+-   **🌊 AI Streaming Assistance**: Real-time interactive chat powered by Llama 3.3 and Groq for zero-latency responses.
+-   **📊 Impact Visualization**: Dynamic analytics dashboard with AreaCharts and Heatmaps to track "Hours Saved" through AI automation.
+-   **📚 Guided Modules**: Step-by-step course content with automated "Key Takeaway" generation on completion.
+-   **🎙️ Voice Input**: Integrated speech-to-text for a seamless, hands-free AI interaction.
+-   **🔐 Secure Auth**: Robust authentication system built with Auth.js (NextAuth), including Role-Based Access Control (RBAC).
+-   **⚡ High-Performance UI**: Beautiful glassmorphic design system using Tailwind CSS, Framer Motion, and Lucide Icons.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+-   **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+-   **Language**: [TypeScript](https://www.typescriptlang.org/)
+-   **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+-   **Database**: [PostgreSQL](https://www.postgresql.org/) via [Supabase](https://supabase.com/)
+-   **ORM**: [Prisma](https://www.prisma.io/)
+-   **Authentication**: [Auth.js v5](https://authjs.dev/)
+-   **AI SDK**: [Vercel AI SDK](https://sdk.vercel.ai/)
+-   **Charts**: [Recharts](https://recharts.org/)
+-   **Animations**: [Framer Motion](https://www.framer.com/motion/)
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+-   Node.js 20+
+-   A PostgreSQL database (Supabase recommended)
+-   A Groq API Key
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Installation
 
-## Deploy on Vercel
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/outcome-os.git
+    cd outcome-os
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3.  **Setup Environment Variables**:
+    Copy `.env.example` to `.env` and fill in your credentials.
+    ```bash
+    cp .env.example .env
+    ```
+
+4.  **Database Migration**:
+    ```bash
+    npx prisma db push
+    npx prisma db seed
+    ```
+
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+
+6.  **Login**:
+    Open [http://localhost:3000](http://localhost:3000) and use the temporary admin credentials visible on the login page.
+
+## 📝 License
+
+Not Available
+
+---
+
+Built with ❤️ by Dibyanand Mishra for the House Of Edtech Internship.
