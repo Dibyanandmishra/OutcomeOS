@@ -22,9 +22,10 @@ model User {
   batchNumber  String?
   createdAt    DateTime @default(now())
 
-  progress     Progress[]
-  doubts       Doubt[]
-  impactLogs   ImpactLog[]
+  progress      Progress[]
+  doubts        Doubt[]
+  impactLogs    ImpactLog[]
+  conversations Conversation[]
 }
 
 model Module {
@@ -52,15 +53,28 @@ model Progress {
 }
 
 model Doubt {
+  id             String        @id @default(cuid())
+  userId         String
+  moduleId       String?
+  question       String
+  answer         String
+  createdAt      DateTime      @default(now())
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  module         Module?       @relation(fields: [moduleId], references: [id])
+}
+
+model Conversation {
   id        String   @id @default(cuid())
   userId    String
-  moduleId  String?
-  question  String
-  answer    String
+  title     String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user      User     @relation(fields: [userId], references: [id])
-  module    Module?  @relation(fields: [moduleId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doubts    Doubt[]
 }
 
 model ImpactLog {

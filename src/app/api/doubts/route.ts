@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { question, moduleId } = await req.json();
+    const { question, moduleId, conversationId } = await req.json();
 
     if (!question || typeof question !== "string" || question.trim().length === 0) {
       return NextResponse.json({ error: "Question is required" }, { status: 400 });
@@ -57,14 +57,63 @@ export async function POST(req: Request) {
           })
         : null;
 
-    const chatStream = await groq.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: `${SYSTEM_PROMPT}${buildModuleContext(selectedModule)}`,
+    let activeConversationId = conversationId;
+    let chatHistory: { role: "user" | "assistant"; content: string }[] = [];
+
+    if (activeConversationId) {
+      // Validate conversation ownership
+      const existingConv = await prisma.conversation.findUnique({
+        where: {
+          id: activeConversationId,
+          userId: session.user.id,
         },
-        { role: "user", content: question.trim() },
-      ],
+      });
+
+      if (!existingConv) {
+        return NextResponse.json({ error: "Conversation not found" }, { status: 404 });
+      }
+
+      // Fetch message history for LLM context
+      const previousDoubts = await prisma.doubt.findMany({
+        where: { conversationId: activeConversationId },
+        orderBy: { createdAt: "asc" },
+        select: {
+          question: true,
+          answer: true,
+        },
+      });
+
+      chatHistory = previousDoubts.flatMap((d) => [
+        { role: "user" as const, content: d.question },
+        { role: "assistant" as const, content: d.answer },
+      ]);
+    } else {
+      // Create new conversation
+      const title =
+        question.trim().length > 40
+          ? question.trim().substring(0, 40) + "..."
+          : question.trim();
+
+      const newConversation = await prisma.conversation.create({
+        data: {
+          userId: session.user.id,
+          title,
+        },
+      });
+      activeConversationId = newConversation.id;
+    }
+
+    const messages = [
+      {
+        role: "system" as const,
+        content: `${SYSTEM_PROMPT}${buildModuleContext(selectedModule)}`,
+      },
+      ...chatHistory,
+      { role: "user" as const, content: question.trim() },
+    ];
+
+    const chatStream = await groq.chat.completions.create({
+      messages,
       model: "llama-3.3-70b-versatile",
       temperature: 0.6,
       max_tokens: 512,
@@ -101,7 +150,14 @@ export async function POST(req: Request) {
               moduleId: moduleId || null,
               question: trimmedQuestion,
               answer: savedAnswer,
+              conversationId: activeConversationId,
             },
+          });
+
+          // Update conversation updatedAt timestamp to pop to the top of the list
+          await prisma.conversation.update({
+            where: { id: activeConversationId },
+            data: { updatedAt: new Date() },
           });
         } catch (error) {
           console.error("[DOUBTS_STREAM]", error);
@@ -121,6 +177,8 @@ export async function POST(req: Request) {
         "Content-Type": "text/plain; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
         "X-Content-Type-Options": "nosniff",
+        "Access-Control-Expose-Headers": "X-Conversation-Id",
+        "X-Conversation-Id": activeConversationId,
       },
     });
   } catch (error) {

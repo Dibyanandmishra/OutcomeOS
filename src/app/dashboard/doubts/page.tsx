@@ -1,4 +1,3 @@
-import { DashboardPageShell } from "@/components/dashboard/DashboardPageShell";
 import { ChatBox } from "@/components/dashboard/ChatBox";
 import { prisma } from "@/lib/prisma";
 
@@ -20,11 +19,16 @@ export default async function DoubtsPage() {
   });
 
   return (
-    <DashboardPageShell
-      title="AI Doubt Resolution"
-      description="Ask questions about the course and get instant AI-powered answers."
-    >
+    <div className="w-full flex flex-col gap-6">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          AI Doubt Resolution
+        </h1>
+        <p className="text-sm text-zinc-400">
+          Ask questions about the course and get instant AI-powered answers.
+        </p>
+      </div>
       <ChatBox modules={modules} />
-    </DashboardPageShell>
+    </div>
   );
 }
